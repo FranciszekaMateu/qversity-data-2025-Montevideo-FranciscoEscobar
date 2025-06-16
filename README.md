@@ -1,4 +1,4 @@
-# Qversity Project
+# qversity-data-2025-Montevideo-FranciscoEscobar
 
 A data local data platform using Docker Compose with Airflow, PostgreSQL, dbt, and Python.
 
@@ -157,4 +157,5 @@ docker compose down -v
 # Remove images
 docker compose down --rmi all
 ```
+
 
