@@ -29,23 +29,29 @@ services:
       AIRFLOW_VAR_S3_OBJECT_KEY: ${BRONZE_S3_KEY}
       AIRFLOW_VAR_POSTGRES_CONN_ID: ${BRONZE_POSTGRES_CONN}
     volumes:
-      - ${AIRFLOW_PROJ_DIR}/dags:/opt/airflow/dags
-      - ${AIRFLOW_PROJ_DIR}/logs:/opt/airflow/logs
-      - ${AIRFLOW_PROJ_DIR}/data:/opt/airflow/data
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./data:/opt/airflow/data
+    user: "${AIRFLOW_UID}:0"
     ports:
       - "8080:8080"
     command: >
       bash -c "
-      airflow db init &&
-      airflow users create --username ${_AIRFLOW_WWW_USER_USERNAME} --password ${_AIRFLOW_WWW_USER_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@example.com &&
-      airflow webserver & airflow scheduler
+      airflow db migrate &&
+      airflow connections create-default-connections || true &&
+      airflow connections delete qversity_postgres || true &&
+      airflow connections add qversity_postgres --conn-type 'postgres' --conn-host 'postgres' --conn-port '5432' --conn-schema '${POSTGRES_DB}' --conn-login '${POSTGRES_USER}' --conn-password '${POSTGRES_PASSWORD}' || true &&
+      airflow users create --username ${_AIRFLOW_WWW_USER_USERNAME} --password ${_AIRFLOW_WWW_USER_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+      airflow webserver &
+      airflow scheduler
       "
 
   dbt:
     image: python:3.11
     volumes:
-      - ${AIRFLOW_PROJ_DIR}/dbt:/dbt
-      - ${AIRFLOW_PROJ_DIR}/data:/data
+      - ./dbt:/dbt
+      - ./data:/data
     working_dir: /dbt
     command: >
       bash -c "
@@ -55,8 +61,7 @@ services:
     depends_on:
       - postgres
     environment:
-      DBT_PROFILES_DIR: ${DBT_PROFILES_DIR}
-      DBT_PROJECT_DIR: ${DBT_PROJECT_DIR}
+      DBT_PROFILES_DIR: /dbt
 
 volumes:
   postgres_data:
