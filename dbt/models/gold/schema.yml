@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: customer_analytics
+    description: "Gold layer wide table with customer metrics and dimensions"
+    columns:
+      - name: customer_id
+        description: "Unique customer ID"
+        tests:
+          - not_null
+          - unique
+      - name: total_revenue
+        description: "Sum of completed payments per customer"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: arpu_real
+        description: "Average monthly revenue based on months of service"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true 
