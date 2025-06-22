@@ -196,7 +196,7 @@ GROUP BY service_code;
 
 ## Business Insights
 
-Comprehensive business insights and analytical findings derived from this project are detailed in the accompanying PDF report, available [here](path/to/your/business_insights.pdf).
+Comprehensive business insights and analytical findings derived from this project are detailed in the accompanying PDF report, available [here](https://github.com/FranciszekaMateu/qversity-data-2025-Montevideo-FranciscoEscobar/blob/main/business_insights_report.pdf).
 
 ## Access Points
 
