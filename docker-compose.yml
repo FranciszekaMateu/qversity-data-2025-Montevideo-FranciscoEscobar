@@ -33,6 +33,7 @@ services:
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ./data:/opt/airflow/data
+      - ./dbt:/opt/airflow/dbt
     user: "${AIRFLOW_UID}:0"
     ports:
       - "8080:8080"
