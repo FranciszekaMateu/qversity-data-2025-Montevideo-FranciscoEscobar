@@ -22,10 +22,10 @@ models:
     bronze:
       +materialized: table
       +schema: bronze
-    # Silver layer - cleaned and transformed data
+    # Silver layer - datos limpios y normalizados
     silver:
       +materialized: table
-      +schema: silver
+      +schema: silver  # Los modelos silver van al esquema silver
     # Gold layer - business-ready data marts
     gold:
       +materialized: table

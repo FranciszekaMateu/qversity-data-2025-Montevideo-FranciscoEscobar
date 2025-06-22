@@ -1,0 +1,121 @@
+version: 2
+
+# Only maintain models that actually exist
+# The stg_mobile_customers and stg_mobile_payment_history models were removed
+# because they were obsolete and read from sources that no longer exist
+
+# Normalized Silver models - Correct relational database structure
+models:
+  - name: stg_mobile_customers_cleaned
+    description: "Clean and validated customer table (WITHOUT contracted_services - now normalized)"
+    columns:
+      - name: customer_id
+        description: "Unique customer ID"
+        tests:
+          - not_null
+          - unique
+      - name: email
+        description: "Customer email"
+        tests:
+          - not_null
+      - name: age
+        description: "Customer age"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 120
+      - name: country
+        description: "Standardized country"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Argentina', 'México', 'Colombia', 'Perú', 'Chile', 'Desconocido']
+      - name: customer_status
+        description: "Customer status"
+        tests:
+          - accepted_values:
+              values: ['ACTIVE', 'INACTIVE', 'SUSPENDED', 'UNKNOWN']
+      - name: monthly_bill_usd
+        description: "Monthly bill in USD (allows negatives for credits/discounts, can be NULL)"
+      - name: credit_score
+        description: "Credit score"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+      - name: monthly_data_gb
+        description: "Monthly data in GB from plan (only positive values)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+
+  - name: stg_payment_history
+    description: "Payment history with referential integrity"
+    columns:
+      - name: payment_id
+        description: "Unique payment ID"
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: "Customer ID (foreign key)"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_mobile_customers_cleaned')
+              field: customer_id
+              severity: warn
+      - name: payment_date
+        description: "Payment date"
+        tests:
+          - not_null
+      - name: payment_amount
+        description: "Payment amount"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: payment_status
+        description: "Payment status"
+        tests:
+          - accepted_values:
+              values: ['COMPLETED', 'PENDING', 'FAILED', 'LATE']
+
+  # NEW NORMALIZED TABLES
+
+  - name: stg_customer_services
+    description: "Many-to-many relationship between customers and services (NORMALIZED)"
+    columns:
+      - name: customer_id
+        description: "Customer ID"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_mobile_customers_cleaned')
+              field: customer_id
+              severity: warn
+      - name: service_id
+        description: "Service ID"
+        tests:
+          - not_null
+      - name: status
+        description: "Service status for this customer"
+        tests:
+          - accepted_values:
+              values: ['ACTIVE', 'INACTIVE', 'SUSPENDED', 'UNKNOWN']
+      - name: contracted_date
+        description: "Service contract date"
+        tests:
+          - not_null
+
+tests:
+  - name: test_customer_services_integrity
+    description: "Verify that each customer has at least one active service or no services"
+    
+  - name: test_services_completeness
+    description: "Verify that all services in original data are in dim_services"
+
+  - name: test_payment_history_completeness
+    description: "Verify that all customers with payment_history have at least one payment"

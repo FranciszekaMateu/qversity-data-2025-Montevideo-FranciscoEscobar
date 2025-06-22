@@ -1,0 +1,39 @@
+version: 2
+
+sources:
+  - name: bronze_sources
+    schema: public_bronze
+    description: "Bronze data - direct source for Silver transformations."
+    tables:
+      - name: raw_mobile_customers
+        description: "Unprocessed JSON data from Bronze."
+        columns:
+          - name: data
+            description: "JSONB column containing raw customer information."
+          - name: _loaded_at
+            description: "Timestamp when the record was loaded from source."
+
+  # Maintain existing sources for compatibility
+  - name: silver_sources
+    schema: silver
+    description: "Data transferred from Bronze (DEPRECATED - use bronze_sources)."
+    tables:
+      - name: raw_customers_json
+        description: "Raw JSON data transferred from Bronze (DEPRECATED)."
+        columns:
+          - name: data
+            description: "JSONB column containing raw customer information."
+          - name: _loaded_at
+            description: "Timestamp when the record was loaded from Bronze."
+            
+  - name: silver_clean_sources
+    schema: silver
+    description: "Clean JSON data in Silver layer (DEPRECATED - use silver_sources)."
+    tables:
+      - name: cleaned_customers_json
+        description: "Clean mobile customer JSON data (DEPRECATED)."
+        columns:
+          - name: data
+            description: "JSONB column containing clean customer information."
+          - name: _loaded_at
+            description: "Timestamp when the record was loaded into the table." 
