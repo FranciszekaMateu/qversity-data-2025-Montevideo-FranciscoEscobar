@@ -33,7 +33,7 @@ with DAG(
     dag_id="gold_pipeline_dag",
     description="Applies dbt transformations and tests for the Gold layer",
     default_args=DEFAULT_ARGS,
-    schedule_interval="@daily",
+    schedule_interval=None,
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=["gold", "qversity", "dbt"],
